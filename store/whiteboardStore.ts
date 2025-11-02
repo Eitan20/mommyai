@@ -13,6 +13,9 @@ export type NodeData = {
   fontSize?: number;
   width?: number;
   height?: number;
+  childNodes?: string[]; // Track child node IDs for groups
+  fileName?: string;
+  recordingDuration?: number;
 };
 
 interface WhiteboardState {
@@ -26,6 +29,7 @@ interface WhiteboardState {
   onNodesChange: (changes: NodeChange[]) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
   addNode: (type: string, position: { x: number; y: number }, data?: Partial<NodeData>) => void;
+  addChildNode: (parentId: string, type: string, position: { x: number; y: number }, data?: Partial<NodeData>) => void;
   updateNodeData: (nodeId: string, data: Partial<NodeData>) => void;
   deleteNode: (nodeId: string) => void;
   setSelectedNodeId: (nodeId: string | null) => void;
@@ -63,10 +67,52 @@ const useWhiteboardStore = create<WhiteboardState>((set, get) => ({
         backgroundColor: '#ffffff',
         textColor: '#000000',
         fontSize: 14,
+        ...(type === 'group' ? { childNodes: [] } : {}),
         ...data,
       },
+      ...(type === 'group' ? {
+        style: {
+          width: data.width || 400,
+          height: data.height || 300,
+        },
+      } : {}),
     };
     set({ nodes: [...get().nodes, newNode] });
+  },
+
+  addChildNode: (parentId, type, position, data = {}) => {
+    const newNode: Node<NodeData> = {
+      id: `${type}-${Date.now()}`,
+      type,
+      position,
+      data: {
+        label: `New ${type}`,
+        backgroundColor: '#ffffff',
+        textColor: '#000000',
+        fontSize: 14,
+        ...data,
+      },
+      parentNode: parentId,
+      extent: 'parent' as const,
+      draggable: true,
+    };
+
+    // Update parent to track child
+    const updatedNodes = get().nodes.map((node) => {
+      if (node.id === parentId) {
+        const childNodes = node.data.childNodes || [];
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            childNodes: [...childNodes, newNode.id],
+          },
+        };
+      }
+      return node;
+    });
+
+    set({ nodes: [...updatedNodes, newNode] });
   },
 
   updateNodeData: (nodeId, data) => {
@@ -80,10 +126,32 @@ const useWhiteboardStore = create<WhiteboardState>((set, get) => ({
   },
 
   deleteNode: (nodeId) => {
+    const nodeToDelete = get().nodes.find((node) => node.id === nodeId);
+
+    // If deleting a group, also delete all its children
+    let nodesToDelete = [nodeId];
+    if (nodeToDelete?.data.childNodes) {
+      nodesToDelete = [...nodesToDelete, ...nodeToDelete.data.childNodes];
+    }
+
+    // If deleting a child, remove it from parent's childNodes array
+    const updatedNodes = get().nodes.filter((node) => !nodesToDelete.includes(node.id)).map((node) => {
+      if (node.data.childNodes) {
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            childNodes: node.data.childNodes.filter((childId) => childId !== nodeId),
+          },
+        };
+      }
+      return node;
+    });
+
     set({
-      nodes: get().nodes.filter((node) => node.id !== nodeId),
+      nodes: updatedNodes,
       edges: get().edges.filter(
-        (edge) => edge.source !== nodeId && edge.target !== nodeId
+        (edge) => !nodesToDelete.includes(edge.source) && !nodesToDelete.includes(edge.target)
       ),
     });
   },
@@ -110,6 +178,7 @@ const useWhiteboardStore = create<WhiteboardState>((set, get) => ({
         label: 'Group',
         width: maxX - minX + 40,
         height: maxY - minY + 40,
+        childNodes: [],
       },
       style: {
         width: maxX - minX + 40,
