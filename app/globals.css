@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* React Flow custom styles */
+.react-flow__node {
+  font-size: 12px;
+}
+
+.react-flow__node-text,
+.react-flow__node-image,
+.react-flow__node-link,
+.react-flow__node-media,
+.react-flow__node-group {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  transition: all 0.2s ease;
+}
+
+.react-flow__node-text:hover,
+.react-flow__node-image:hover,
+.react-flow__node-link:hover,
+.react-flow__node-media:hover,
+.react-flow__node-group:hover {
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.react-flow__node.selected {
+  box-shadow: 0 0 0 2px #3b82f6;
+}
+
+@media (prefers-color-scheme: dark) {
+  .react-flow__node-text,
+  .react-flow__node-image,
+  .react-flow__node-link,
+  .react-flow__node-media,
+  .react-flow__node-group {
+    background: #1f2937;
+    color: #f3f4f6;
+  }
+}

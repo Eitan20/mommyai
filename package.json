@@ -1,0 +1,35 @@
+{
+  "name": "mommyai-whiteboard",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "next": "^14.2.0",
+    "reactflow": "^11.11.0",
+    "@reactflow/background": "^11.3.0",
+    "@reactflow/controls": "^11.2.0",
+    "@reactflow/minimap": "^11.7.0",
+    "zustand": "^4.5.0",
+    "lucide-react": "^0.344.0",
+    "react-colorful": "^5.6.1",
+    "openai": "^4.28.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "typescript": "^5",
+    "tailwindcss": "^3.4.0",
+    "postcss": "^8",
+    "autoprefixer": "^10.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "^14.2.0"
+  }
+}
