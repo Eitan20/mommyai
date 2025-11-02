@@ -80,7 +80,7 @@ function ImageNode({ id, data, selected }: NodeProps<NodeData>) {
         borderColor: selected ? '#3b82f6' : 'transparent',
       }}
     >
-      <Handle type="target" position={Position.Top} className="w-2 h-2" />
+      <Handle type="target" position={Position.Right} className="w-2 h-2" />
 
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
@@ -200,7 +200,7 @@ function ImageNode({ id, data, selected }: NodeProps<NodeData>) {
         </div>
       )}
 
-      <Handle type="source" position={Position.Bottom} className="w-2 h-2" />
+      <Handle type="source" position={Position.Right} className="w-2 h-2" />
     </div>
   );
 }

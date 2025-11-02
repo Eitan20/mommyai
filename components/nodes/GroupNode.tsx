@@ -52,7 +52,7 @@ function GroupNode({ id, data, selected }: NodeProps<NodeData>) {
         height: data.height || 300,
       }}
     >
-      <Handle type="target" position={Position.Top} className="w-2 h-2" />
+      <Handle type="target" position={Position.Right} className="w-2 h-2" />
 
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -100,7 +100,7 @@ function GroupNode({ id, data, selected }: NodeProps<NodeData>) {
         </div>
       )}
 
-      <Handle type="source" position={Position.Bottom} className="w-2 h-2" />
+      <Handle type="source" position={Position.Right} className="w-2 h-2" />
     </div>
   );
 }
