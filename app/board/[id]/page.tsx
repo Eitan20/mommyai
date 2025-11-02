@@ -7,6 +7,7 @@ import useBoardStore from '@/store/boardStore';
 import WhiteboardCanvas from '@/components/WhiteboardCanvas';
 import ChatPanel from '@/components/ChatPanel';
 import BoardHeader from '@/components/BoardHeader';
+import LeftSidebar from '@/components/LeftSidebar';
 
 export default function BoardPage() {
   const router = useRouter();
@@ -50,8 +51,16 @@ export default function BoardPage() {
         />
       )}
 
-      {/* Main Content: Canvas (Left) + Chat Panel (Right) */}
+      {/* Main Content: Left Sidebar + Canvas + Chat Panel */}
       <div className="flex-1 flex overflow-hidden">
+        {/* Left Sidebar */}
+        {!isFullscreen && (
+          <LeftSidebar
+            onChatToggle={() => setIsChatOpen(!isChatOpen)}
+            isChatOpen={isChatOpen}
+          />
+        )}
+
         {/* Canvas Area */}
         <div
           className={`transition-all ${
