@@ -19,62 +19,29 @@ export default function CollaborationCursors({ boardId }: CollaborationCursorsPr
   const [cursors, setCursors] = useState<Cursor[]>([]);
   const [activeUsers, setActiveUsers] = useState<string[]>([]);
 
-  // Simulate active collaborators (in production, this would come from a real-time service)
+  // Real-time collaboration placeholder
+  // In production, integrate with WebSocket service (e.g., Pusher, Ably, Socket.io)
+  // or real-time database (e.g., Firebase, Supabase) to track:
+  // - Active users on the board
+  // - Real-time cursor positions
+  // - User presence (online/offline)
+
   useEffect(() => {
-    // Mock active users
-    const mockUsers = [
-      { id: 'user1', name: 'Alice', color: '#ef4444' },
-      { id: 'user2', name: 'Bob', color: '#3b82f6' },
-    ];
-
-    // Randomly show/hide users to simulate joining/leaving
-    const interval = setInterval(() => {
-      const randomUser = mockUsers[Math.floor(Math.random() * mockUsers.length)];
-      const shouldShow = Math.random() > 0.5;
-
-      if (shouldShow) {
-        setActiveUsers((prev) => {
-          if (!prev.includes(randomUser.name)) {
-            return [...prev, randomUser.name];
-          }
-          return prev;
-        });
-
-        // Simulate cursor movement
-        setCursors((prev) => {
-          const existing = prev.find((c) => c.name === randomUser.name);
-          if (existing) {
-            return prev.map((c) =>
-              c.name === randomUser.name
-                ? {
-                    ...c,
-                    x: Math.random() * (window.innerWidth - 100),
-                    y: Math.random() * (window.innerHeight - 100),
-                  }
-                : c
-            );
-          } else {
-            return [
-              ...prev,
-              {
-                id: randomUser.id,
-                name: randomUser.name,
-                color: randomUser.color,
-                x: Math.random() * (window.innerWidth - 100),
-                y: Math.random() * (window.innerHeight - 100),
-              },
-            ];
-          }
-        });
-      }
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, []);
+    // TODO: Set up real-time collaboration service
+    // Example with WebSocket:
+    // const ws = new WebSocket(`wss://your-server.com/boards/${boardId}`);
+    // ws.onmessage = (event) => {
+    //   const data = JSON.parse(event.data);
+    //   if (data.type === 'cursor') {
+    //     setCursors(prev => updateCursor(prev, data));
+    //   }
+    // };
+    // return () => ws.close();
+  }, [boardId]);
 
   return (
     <>
-      {/* Active Users Indicator (Top Right of Canvas) */}
+      {/* Active Users Indicator */}
       {activeUsers.length > 0 && (
         <div className="absolute top-4 right-4 z-10 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 px-3 py-2">
           <div className="flex items-center gap-2">
