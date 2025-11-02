@@ -18,6 +18,7 @@ import TextNode from './nodes/TextNode';
 import ImageNode from './nodes/ImageNode';
 import LinkNode from './nodes/LinkNode';
 import MediaNode from './nodes/MediaNode';
+import DocumentNode from './nodes/DocumentNode';
 import GroupNode from './nodes/GroupNode';
 import CollaborationCursors from './CollaborationCursors';
 
@@ -50,6 +51,7 @@ export default function WhiteboardCanvas({
       image: ImageNode,
       link: LinkNode,
       media: MediaNode,
+      document: DocumentNode,
       group: GroupNode,
     }),
     []

@@ -12,6 +12,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import useWhiteboardStore from '@/store/whiteboardStore';
+import useContentStore from '@/store/contentStore';
 
 interface Message {
   id: string;
@@ -49,6 +50,7 @@ export default function ChatPanel({ boardId, onClose }: ChatPanelProps) {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { addNode, nodes } = useWhiteboardStore();
+  const { getAllContents, getAllProcessedText } = useContentStore();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -75,10 +77,75 @@ export default function ChatPanel({ boardId, onClose }: ChatPanelProps) {
     // Simulate AI processing (replace with actual API call)
     setTimeout(() => {
       const lowerInput = input.toLowerCase();
+      const allContents = getAllContents();
+      const processedText = getAllProcessedText();
       let aiResponse = '';
 
-      // AI logic based on user input
-      if (lowerInput.includes('create') || lowerInput.includes('add')) {
+      // Check for multi-modal content queries
+      if (lowerInput.includes('video') && lowerInput.includes('what') || lowerInput.includes('analyze') && allContents.length > 0) {
+        const videos = allContents.filter(c => c.type === 'video' && c.status === 'completed');
+        const images = allContents.filter(c => c.type === 'image' && c.status === 'completed');
+        const docs = allContents.filter(c => c.type === 'document' && c.status === 'completed');
+        const audio = allContents.filter(c => c.type === 'audio' && c.status === 'completed');
+
+        aiResponse = `📊 **Multi-Modal Content Analysis**\n\n`;
+
+        if (videos.length > 0) {
+          aiResponse += `🎥 **Videos (${videos.length})**:\n`;
+          videos.forEach(v => {
+            aiResponse += `• ${v.metadata?.platform || 'Video'}: ${v.summary || 'Transcribed and analyzed'}\n`;
+          });
+          aiResponse += '\n';
+        }
+
+        if (images.length > 0) {
+          aiResponse += `🖼️ **Images (${images.length})**:\n`;
+          images.forEach(img => {
+            aiResponse += `• ${img.caption || 'Image analyzed'}\n`;
+          });
+          aiResponse += '\n';
+        }
+
+        if (docs.length > 0) {
+          aiResponse += `📄 **Documents (${docs.length})**:\n`;
+          docs.forEach(doc => {
+            aiResponse += `• ${doc.fileName}: ${doc.metadata?.pageCount || 0} pages extracted\n`;
+          });
+          aiResponse += '\n';
+        }
+
+        if (audio.length > 0) {
+          aiResponse += `🎵 **Audio (${audio.length})**:\n`;
+          audio.forEach(a => {
+            aiResponse += `• ${a.fileName}: Transcribed\n`;
+          });
+          aiResponse += '\n';
+        }
+
+        if (processedText) {
+          aiResponse += `\nAll content has been processed and is available for analysis. I can:\n• Answer questions about the content\n• Find connections between different media\n• Summarize key points\n• Generate insights\n\nWhat would you like to know?`;
+        }
+      } else if ((lowerInput.includes('summarize') || lowerInput.includes('summary')) && processedText) {
+        const allContents = getAllContents();
+        const contentTypes = allContents.map(c => c.type).join(', ');
+
+        aiResponse = `📋 **Comprehensive Summary**\n\nI've analyzed ${allContents.length} pieces of content (${contentTypes}):\n\n`;
+
+        allContents.forEach((content, idx) => {
+          if (content.status === 'completed') {
+            aiResponse += `${idx + 1}. **${content.type.toUpperCase()}**: ${content.summary || content.caption || content.extractedText?.substring(0, 100) + '...'}\n`;
+            if (content.keyPoints && content.keyPoints.length > 0) {
+              aiResponse += `   Key points:\n`;
+              content.keyPoints.slice(0, 3).forEach(point => {
+                aiResponse += `   • ${point}\n`;
+              });
+            }
+            aiResponse += '\n';
+          }
+        });
+
+        aiResponse += `Would you like me to:\n• Dive deeper into any specific content?\n• Find connections between these items?\n• Generate additional insights?`;
+      } else if (lowerInput.includes('create') || lowerInput.includes('add')) {
         if (lowerInput.includes('text')) {
           addNode('text', { x: 200, y: 200 }, { content: 'AI Generated Text' });
           aiResponse = '✅ Created a text node for you! You can find it on your canvas.';
@@ -104,9 +171,9 @@ export default function ChatPanel({ boardId, onClose }: ChatPanelProps) {
       } else if (lowerInput.includes('organize') || lowerInput.includes('arrange')) {
         aiResponse = `I can see you have ${nodes.length} nodes on your board. Here are some organization tips:\n\n1. **Group related items**: Select multiple nodes and group them\n2. **Use colors**: Color-code nodes by category\n3. **Create hierarchy**: Use connections to show relationships\n4. **Templates**: Try a mind map or kanban template\n\nWould you like me to help with a specific organization pattern?`;
       } else if (lowerInput.includes('help') || lowerInput.includes('what can you do')) {
-        aiResponse = `I'm powered by ${selectedModel.name} and can assist you with:\n\n🎨 **Content Creation**\n• Generate text, ideas, and content\n• Add images, links, and media\n• Create structured templates\n\n📊 **Organization**\n• Arrange and group elements\n• Suggest layout patterns\n• Auto-connect related items\n\n💡 **Ideas & Brainstorming**\n• Generate creative ideas\n• Expand on concepts\n• Create mind maps\n\nJust ask me what you need!`;
-      } else if (lowerInput.includes('summary') || lowerInput.includes('summarize')) {
-        aiResponse = `📋 **Board Summary**\n\nYour board currently has ${nodes.length} nodes. Let me help you organize or expand your ideas. Would you like me to:\n\n• Add more related content?\n• Organize existing nodes?\n• Create connections between ideas?`;
+        const processedCount = allContents.filter(c => c.status === 'completed').length;
+
+        aiResponse = `I'm powered by ${selectedModel.name} and can assist you with:\n\n🎨 **Content Creation**\n• Generate text, ideas, and content\n• Add images, links, and media\n• Create structured templates\n\n📊 **Multi-Modal Analysis** ${processedCount > 0 ? `(${processedCount} items processed)` : ''}\n• Analyze videos (YouTube, TikTok, IG, etc.)\n• Transcribe audio and video\n• Extract text from PDFs\n• Caption and analyze images\n• Find insights across all media\n\n💡 **Ideas & Brainstorming**\n• Generate creative ideas\n• Expand on concepts\n• Create mind maps\n\n🔍 **Intelligence**\n• Answer questions about uploaded content\n• Summarize and synthesize information\n• Find connections between different media\n\nJust ask me what you need!`;
       } else {
         aiResponse = `I understand you're interested in "${input}". I can help you:\n\n• Create nodes related to this topic\n• Generate ideas and expand on concepts\n• Organize your thoughts into a structured layout\n\nWhat would you like me to do?`;
       }

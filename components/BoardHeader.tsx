@@ -17,6 +17,7 @@ import {
   Type,
   Link as LinkIcon,
   Folder,
+  FileText,
 } from 'lucide-react';
 import { Board } from '@/store/boardStore';
 import useWhiteboardStore from '@/store/whiteboardStore';
@@ -214,6 +215,13 @@ export default function BoardHeader({
                 >
                   <Video size={18} />
                   <span className="text-sm">Media</span>
+                </button>
+                <button
+                  onClick={() => handleAddNode('document')}
+                  className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                >
+                  <FileText size={18} />
+                  <span className="text-sm">Document</span>
                 </button>
                 <button
                   onClick={() => handleAddNode('group')}
