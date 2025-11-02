@@ -2,15 +2,18 @@
 
 import { memo, useState, useCallback, useEffect } from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
-import { Video, Music, Trash2, Loader, Sparkles, FileText, Upload } from 'lucide-react';
+import { Video, Music, Trash2, Loader, Sparkles, FileText, Upload, Mic } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import useWhiteboardStore, { NodeData } from '@/store/whiteboardStore';
 import useContentStore from '@/store/contentStore';
+import VoiceRecorder from '@/components/VoiceRecorder';
 import {
   detectVideoType,
-  transcribeVideo,
+  fetchVideoTranscript,
   transcribeAudio,
   getVideoThumbnail,
+  isValidVideoFile,
+  isValidAudioFile,
 } from '@/utils/mediaProcessing';
 
 const ReactPlayer = dynamic(() => import('react-player'), { ssr: false });
@@ -24,6 +27,7 @@ function MediaNode({ id, data, selected }: NodeProps<NodeData>) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showTranscript, setShowTranscript] = useState(false);
   const [videoType, setVideoType] = useState<string | null>(null);
+  const [showRecorder, setShowRecorder] = useState(false);
 
   // Detect video platform when URL changes
   useEffect(() => {
@@ -44,23 +48,40 @@ function MediaNode({ id, data, selected }: NodeProps<NodeData>) {
     updateNodeData(id, { mediaType: type });
   }, [id, updateNodeData]);
 
-  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const dataUrl = e.target?.result as string;
-        setMediaUrl(dataUrl);
-        updateNodeData(id, { mediaUrl: dataUrl, fileName: file.name });
+    if (!file) return;
 
-        // Auto-process audio files
-        if (mediaType === 'audio') {
-          handleProcessAudio(file);
-        }
-      };
-      reader.readAsDataURL(file);
+    // Validate file type
+    const isVideo = isValidVideoFile(file);
+    const isAudio = isValidAudioFile(file);
+
+    if (!isVideo && !isAudio) {
+      alert('Please upload a valid video (mp4, webm) or audio (mp3, wav) file');
+      return;
     }
-  }, [id, updateNodeData, mediaType]);
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const dataUrl = e.target?.result as string;
+      setMediaUrl(dataUrl);
+
+      // Set media type based on file
+      const detectedType = isVideo ? 'video' : 'audio';
+      setMediaType(detectedType);
+      updateNodeData(id, {
+        mediaUrl: dataUrl,
+        fileName: file.name,
+        mediaType: detectedType,
+      });
+
+      // Auto-process audio files
+      if (isAudio) {
+        await handleProcessAudio(file);
+      }
+    };
+    reader.readAsDataURL(file);
+  }, [id, updateNodeData]);
 
   const handleProcessVideo = useCallback(async () => {
     if (!mediaUrl) return;
@@ -77,13 +98,19 @@ function MediaNode({ id, data, selected }: NodeProps<NodeData>) {
     });
 
     try {
-      // Transcribe video
-      const transcript = await transcribeVideo(mediaUrl);
+      // Fetch transcript from video platform
+      const result = await fetchVideoTranscript(mediaUrl);
 
       updateContent(id, {
         status: 'completed',
-        transcript,
-        summary: `Video from ${videoType || 'source'} has been analyzed.`,
+        transcript: result.transcript,
+        summary: `${videoType || 'Video'} from ${videoType || 'source'} has been analyzed.`,
+        metadata: {
+          platform: videoType || undefined,
+          title: result.title,
+          author: result.author,
+          duration: result.duration,
+        },
         keyPoints: [
           'Video content transcribed',
           'Key topics identified',
@@ -99,22 +126,24 @@ function MediaNode({ id, data, selected }: NodeProps<NodeData>) {
     }
   }, [mediaUrl, id, videoType, addContent, updateContent, updateNodeData]);
 
-  const handleProcessAudio = useCallback(async (file: File) => {
+  const handleProcessAudio = useCallback(async (file: File | Blob, fileName?: string) => {
     setIsProcessing(true);
+    const name = fileName || (file instanceof File ? file.name : 'voice-recording.webm');
+
     addContent(id, {
       id,
       type: 'audio',
-      fileName: file.name,
+      fileName: name,
       status: 'processing',
     });
 
     try {
-      const transcript = await transcribeAudio(file);
+      const transcript = await transcribeAudio(file, name);
 
       updateContent(id, {
         status: 'completed',
         transcript,
-        summary: `Audio transcribed from ${file.name}`,
+        summary: `Audio transcribed from ${name}`,
       });
 
       updateNodeData(id, { processed: true });
@@ -124,6 +153,29 @@ function MediaNode({ id, data, selected }: NodeProps<NodeData>) {
       setIsProcessing(false);
     }
   }, [id, addContent, updateContent, updateNodeData]);
+
+  const handleRecordingComplete = useCallback((audioBlob: Blob, duration: number) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const dataUrl = e.target?.result as string;
+      const fileName = `voice-note-${Date.now()}.webm`;
+
+      setMediaUrl(dataUrl);
+      setMediaType('audio');
+      updateNodeData(id, {
+        mediaUrl: dataUrl,
+        fileName,
+        mediaType: 'audio',
+        recordingDuration: duration,
+      });
+
+      setShowRecorder(false);
+
+      // Auto-process the recording
+      await handleProcessAudio(audioBlob, fileName);
+    };
+    reader.readAsDataURL(audioBlob);
+  }, [id, updateNodeData, handleProcessAudio]);
 
   const handleDelete = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -188,27 +240,47 @@ function MediaNode({ id, data, selected }: NodeProps<NodeData>) {
         </button>
       </div>
 
-      <div className="space-y-2 mb-2">
-        <input
-          type="text"
-          value={mediaUrl}
-          onChange={handleMediaUrlChange}
-          placeholder={`Paste ${mediaType} URL (YouTube, TikTok, IG, etc.)...`}
-          className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-        />
-        <label className="block">
+      {!showRecorder ? (
+        <div className="space-y-2 mb-2">
           <input
-            type="file"
-            accept={mediaType === 'video' ? 'video/*' : 'audio/*'}
-            onChange={handleFileUpload}
-            className="hidden"
+            type="text"
+            value={mediaUrl}
+            onChange={handleMediaUrlChange}
+            placeholder={`Paste ${mediaType} URL (YouTube, TikTok, IG, Loom, FB...)...`}
+            className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
           />
-          <div className="w-full p-2 border border-dashed rounded text-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-            <Upload size={16} className="inline mr-2" />
-            <span className="text-sm">Or upload {mediaType} file</span>
-          </div>
-        </label>
-      </div>
+          <label className="block">
+            <input
+              type="file"
+              accept={mediaType === 'video' ? 'video/mp4,video/webm,video/ogg' : 'audio/mp3,audio/mpeg,audio/wav,audio/ogg,audio/webm'}
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+            <div className="w-full p-2 border border-dashed rounded text-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+              <Upload size={16} className="inline mr-2" />
+              <span className="text-sm">Upload {mediaType} file</span>
+            </div>
+          </label>
+
+          {/* Voice Recording Button */}
+          {mediaType === 'audio' && (
+            <button
+              onClick={() => setShowRecorder(true)}
+              className="w-full flex items-center justify-center gap-2 p-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded hover:from-purple-600 hover:to-pink-600 transition-all"
+            >
+              <Mic size={16} />
+              <span className="text-sm font-medium">Record Voice Note</span>
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="mb-2">
+          <VoiceRecorder
+            onRecordingComplete={handleRecordingComplete}
+            onCancel={() => setShowRecorder(false)}
+          />
+        </div>
+      )}
 
       {data.mediaUrl && (
         <div className="space-y-2">

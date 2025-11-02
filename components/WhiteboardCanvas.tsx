@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -8,6 +8,7 @@ import ReactFlow, {
   BackgroundVariant,
   Connection,
   addEdge,
+  useReactFlow,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { X } from 'lucide-react';
@@ -21,6 +22,7 @@ import MediaNode from './nodes/MediaNode';
 import DocumentNode from './nodes/DocumentNode';
 import GroupNode from './nodes/GroupNode';
 import CollaborationCursors from './CollaborationCursors';
+import MediaDropZone from './MediaDropZone';
 
 interface WhiteboardCanvasProps {
   boardId: string;
@@ -40,9 +42,11 @@ export default function WhiteboardCanvas({
     onEdgesChange,
     setNodes,
     setEdges,
+    addNode,
   } = useWhiteboardStore();
 
   const { getCurrentBoard, updateBoard } = useBoardStore();
+  const [isDraggingFile, setIsDraggingFile] = useState(false);
 
   // Define custom node types
   const nodeTypes = useMemo(
@@ -82,8 +86,71 @@ export default function WhiteboardCanvas({
     [edges, setEdges]
   );
 
+  // Handle file drop
+  const handleFileDrop = useCallback(
+    (file: File, category: 'image' | 'video' | 'audio' | 'document') => {
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        const dataUrl = e.target?.result as string;
+        const centerX = window.innerWidth / 2 - 150;
+        const centerY = window.innerHeight / 2 - 100;
+
+        // Create appropriate node based on category
+        switch (category) {
+          case 'image':
+            addNode('image', { x: centerX, y: centerY }, {
+              imageUrl: dataUrl,
+              fileName: file.name,
+              label: file.name,
+            });
+            break;
+          case 'video':
+          case 'audio':
+            addNode('media', { x: centerX, y: centerY }, {
+              mediaUrl: dataUrl,
+              fileName: file.name,
+              mediaType: category,
+              label: file.name,
+            });
+            break;
+          case 'document':
+            addNode('document', { x: centerX, y: centerY }, {
+              fileName: file.name,
+              label: file.name,
+            });
+            break;
+        }
+      };
+
+      reader.readAsDataURL(file);
+      setIsDraggingFile(false);
+    },
+    [addNode]
+  );
+
+  // Handle drag over canvas
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingFile(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Only set to false if leaving the canvas container
+    if (e.currentTarget === e.target) {
+      setIsDraggingFile(false);
+    }
+  }, []);
+
   return (
-    <div className="relative w-full h-full">
+    <div
+      className="relative w-full h-full"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+    >
       {isFullscreen && (
         <button
           onClick={onExitFullscreen}
@@ -126,18 +193,26 @@ export default function WhiteboardCanvas({
         />
       </ReactFlow>
 
-      {/* Welcome message for empty board */}
-      {nodes.length === 0 && (
+      {/* Media Drop Zone - shown when empty or dragging files */}
+      {(nodes.length === 0 || isDraggingFile) && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="text-center space-y-4 max-w-md">
-            <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200">
-              Start Creating
-            </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-400">
-              Use the toolbar above to add elements to your board,
-              <br />
-              or ask the AI assistant for help!
-            </p>
+          <div className="pointer-events-auto max-w-2xl w-full mx-4">
+            {nodes.length === 0 && !isDraggingFile && (
+              <div className="text-center space-y-4 mb-8">
+                <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200">
+                  Start Creating
+                </h2>
+                <p className="text-lg text-gray-600 dark:text-gray-400">
+                  Drag & drop files below, use the toolbar above,
+                  <br />
+                  or ask the AI assistant for help!
+                </p>
+              </div>
+            )}
+            <MediaDropZone
+              onFileDrop={handleFileDrop}
+              className={isDraggingFile ? 'scale-105 shadow-2xl' : ''}
+            />
           </div>
         </div>
       )}
