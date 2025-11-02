@@ -15,6 +15,19 @@ function ImageNode({ id, data, selected }: NodeProps<NodeData>) {
     updateNodeData(id, { imageUrl: url });
   }, [id, updateNodeData]);
 
+  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target?.result as string;
+        setImageUrl(dataUrl);
+        updateNodeData(id, { imageUrl: dataUrl });
+      };
+      reader.readAsDataURL(file);
+    }
+  }, [id, updateNodeData]);
+
   const handleDelete = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     deleteNode(id);
@@ -45,13 +58,27 @@ function ImageNode({ id, data, selected }: NodeProps<NodeData>) {
         </button>
       </div>
 
-      <input
-        type="text"
-        value={imageUrl}
-        onChange={handleImageUrlChange}
-        placeholder="Enter image URL..."
-        className="w-full p-2 border rounded mb-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-      />
+      <div className="space-y-2 mb-2">
+        <input
+          type="text"
+          value={imageUrl}
+          onChange={handleImageUrlChange}
+          placeholder="Enter image URL..."
+          className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+        />
+        <label className="block">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileUpload}
+            className="hidden"
+          />
+          <div className="w-full p-2 border border-dashed rounded text-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            <Upload size={16} className="inline mr-2" />
+            <span className="text-sm">Or upload file</span>
+          </div>
+        </label>
+      </div>
 
       {data.imageUrl ? (
         <div className="relative w-full h-48 bg-gray-100 dark:bg-gray-800 rounded overflow-hidden">
