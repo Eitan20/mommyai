@@ -6,6 +6,7 @@ export type NodeData = {
   content?: string;
   url?: string;
   imageUrl?: string;
+  icon?: string;
   mediaUrl?: string;
   mediaType?: 'video' | 'audio';
   backgroundColor?: string;

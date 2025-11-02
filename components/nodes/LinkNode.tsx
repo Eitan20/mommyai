@@ -46,7 +46,13 @@ function LinkNode({ id, data, selected }: NodeProps<NodeData>) {
 
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <LinkIcon size={16} style={{ color: data.textColor || '#000000' }} />
+          {data.icon ? (
+            <img src={data.icon} alt="" className="w-4 h-4" onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+            }} />
+          ) : (
+            <LinkIcon size={16} style={{ color: data.textColor || '#000000' }} />
+          )}
           <span className="font-semibold text-sm" style={{ color: data.textColor || '#000000' }}>
             Link
           </span>
@@ -70,6 +76,20 @@ function LinkNode({ id, data, selected }: NodeProps<NodeData>) {
         </div>
       </div>
 
+      {/* Thumbnail */}
+      {data.imageUrl && (
+        <div className="mb-2 rounded overflow-hidden">
+          <img
+            src={data.imageUrl}
+            alt={data.label || 'Link preview'}
+            className="w-full h-32 object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+            }}
+          />
+        </div>
+      )}
+
       <input
         type="text"
         value={label}
@@ -78,6 +98,13 @@ function LinkNode({ id, data, selected }: NodeProps<NodeData>) {
         className="w-full p-2 border rounded mb-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium"
         style={{ color: data.textColor || '#000000' }}
       />
+
+      {/* Description */}
+      {data.content && (
+        <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">
+          {data.content}
+        </p>
+      )}
 
       <input
         type="url"

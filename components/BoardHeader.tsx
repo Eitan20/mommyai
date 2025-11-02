@@ -18,9 +18,12 @@ import {
   Link as LinkIcon,
   Folder,
   FileText,
+  Moon,
+  Sun,
 } from 'lucide-react';
 import { Board } from '@/store/boardStore';
 import useWhiteboardStore from '@/store/whiteboardStore';
+import useThemeStore from '@/store/themeStore';
 
 interface BoardHeaderProps {
   board: Board;
@@ -37,6 +40,7 @@ export default function BoardHeader({
 }: BoardHeaderProps) {
   const router = useRouter();
   const { addNode } = useWhiteboardStore();
+  const { isDarkMode, toggleDarkMode } = useThemeStore();
   const [showTemplates, setShowTemplates] = useState(false);
   const [showMediaMenu, setShowMediaMenu] = useState(false);
   const [viewMode, setViewMode] = useState<'freeform' | 'mindmap'>('freeform');
@@ -261,6 +265,14 @@ export default function BoardHeader({
 
         {/* Right Section */}
         <div className="flex items-center gap-2">
+          <button
+            onClick={toggleDarkMode}
+            className="p-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all"
+            title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+
           <button
             onClick={onToggleChat}
             className={`p-2 rounded-lg transition-all ${

@@ -23,6 +23,8 @@ import DocumentNode from './nodes/DocumentNode';
 import GroupNode from './nodes/GroupNode';
 import CollaborationCursors from './CollaborationCursors';
 import MediaDropZone from './MediaDropZone';
+import { isValidUrl, fetchLinkMetadata } from '@/utils/linkMetadata';
+import { detectVideoType } from '@/utils/mediaProcessing';
 
 interface WhiteboardCanvasProps {
   boardId: string;
@@ -145,6 +147,48 @@ export default function WhiteboardCanvas({
     }
   }, []);
 
+  // Handle paste events (Cmd+V / Ctrl+V)
+  useEffect(() => {
+    const handlePaste = async (e: ClipboardEvent) => {
+      const pastedText = e.clipboardData?.getData('text');
+
+      if (!pastedText || !isValidUrl(pastedText)) {
+        return; // Not a URL, ignore
+      }
+
+      e.preventDefault();
+
+      const centerX = window.innerWidth / 2 - 150;
+      const centerY = window.innerHeight / 2 - 100;
+
+      // Check if it's a video URL
+      const videoType = detectVideoType(pastedText);
+
+      if (videoType && videoType !== 'unknown') {
+        // Create media node for videos
+        addNode('media', { x: centerX, y: centerY }, {
+          mediaUrl: pastedText,
+          mediaType: 'video',
+          label: `${videoType.charAt(0).toUpperCase() + videoType.slice(1)} Video`,
+        });
+      } else {
+        // Fetch metadata for regular links
+        const metadata = await fetchLinkMetadata(pastedText);
+
+        addNode('link', { x: centerX, y: centerY }, {
+          url: pastedText,
+          label: metadata.title || 'Link',
+          content: metadata.description,
+          imageUrl: metadata.image,
+          icon: metadata.icon,
+        });
+      }
+    };
+
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [addNode]);
+
   return (
     <div
       className="relative w-full h-full"
@@ -168,10 +212,22 @@ export default function WhiteboardCanvas({
         onConnect={onConnect}
         nodeTypes={nodeTypes}
         fitView
-        className="bg-gray-50 dark:bg-gray-900"
+        className="bg-white dark:bg-gray-900"
+        minZoom={0.1}
+        maxZoom={4}
+        defaultViewport={{ x: 0, y: 0, zoom: 1 }}
       >
-        <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
-        <Controls />
+        <Background
+          variant={BackgroundVariant.Dots}
+          gap={12}
+          size={1}
+          className="bg-white dark:bg-gray-900"
+        />
+        <Controls
+          showZoom={true}
+          showFitView={true}
+          showInteractive={true}
+        />
         <MiniMap
           nodeColor={(node) => {
             switch (node.type) {
