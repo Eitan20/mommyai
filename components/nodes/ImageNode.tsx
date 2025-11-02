@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useState, useCallback } from 'react';
-import { Handle, Position, NodeProps } from 'reactflow';
+import { Handle, Position, NodeProps, NodeResizer } from 'reactflow';
 import { Image as ImageIcon, Trash2, Upload, Sparkles, Loader, Eye } from 'lucide-react';
 import useWhiteboardStore, { NodeData } from '@/store/whiteboardStore';
 import useContentStore from '@/store/contentStore';
@@ -80,6 +80,13 @@ function ImageNode({ id, data, selected }: NodeProps<NodeData>) {
         borderColor: selected ? '#3b82f6' : 'transparent',
       }}
     >
+      <NodeResizer
+        minWidth={250}
+        minHeight={200}
+        isVisible={selected}
+        lineClassName="border-blue-400"
+        handleClassName="h-3 w-3 bg-white border-2 border-blue-400"
+      />
       <Handle type="target" position={Position.Right} className="w-2 h-2" />
 
       <div className="flex items-center justify-between mb-2">

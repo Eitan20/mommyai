@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useState, useCallback, useEffect } from 'react';
-import { Handle, Position, NodeProps } from 'reactflow';
+import { Handle, Position, NodeProps, NodeResizer } from 'reactflow';
 import { Video, Music, Trash2, Loader, Sparkles, FileText, Upload, Mic } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import useWhiteboardStore, { NodeData } from '@/store/whiteboardStore';
@@ -193,6 +193,13 @@ function MediaNode({ id, data, selected }: NodeProps<NodeData>) {
         borderColor: selected ? '#3b82f6' : 'transparent',
       }}
     >
+      <NodeResizer
+        minWidth={300}
+        minHeight={200}
+        isVisible={selected}
+        lineClassName="border-blue-400"
+        handleClassName="h-3 w-3 bg-white border-2 border-blue-400"
+      />
       <Handle type="target" position={Position.Right} className="w-2 h-2" />
 
       <div className="flex items-center justify-between mb-2">

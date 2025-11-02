@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useState, useCallback } from 'react';
-import { Handle, Position, NodeProps } from 'reactflow';
+import { Handle, Position, NodeProps, NodeResizer } from 'reactflow';
 import { Link as LinkIcon, Trash2, ExternalLink } from 'lucide-react';
 import useWhiteboardStore, { NodeData } from '@/store/whiteboardStore';
 
@@ -36,12 +36,19 @@ function LinkNode({ id, data, selected }: NodeProps<NodeData>) {
 
   return (
     <div
-      className="px-4 py-3 rounded-lg shadow-lg min-w-[250px] max-w-[350px] border-2"
+      className="px-4 py-3 rounded-lg shadow-lg min-w-[250px] border-2"
       style={{
         backgroundColor: data.backgroundColor || '#ffffff',
         borderColor: selected ? '#3b82f6' : 'transparent',
       }}
     >
+      <NodeResizer
+        minWidth={250}
+        minHeight={150}
+        isVisible={selected}
+        lineClassName="border-blue-400"
+        handleClassName="h-3 w-3 bg-white border-2 border-blue-400"
+      />
       <Handle type="target" position={Position.Right} className="w-2 h-2" />
 
       <div className="flex items-center justify-between mb-2">

@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useState, useCallback } from 'react';
-import { Handle, Position, NodeProps } from 'reactflow';
+import { Handle, Position, NodeProps, NodeResizer } from 'reactflow';
 import { Type, Trash2, Palette, TextCursor } from 'lucide-react';
 import useWhiteboardStore, { NodeData } from '@/store/whiteboardStore';
 
@@ -29,18 +29,25 @@ function TextNode({ id, data, selected }: NodeProps<NodeData>) {
 
   return (
     <div
-      className="px-4 py-3 rounded-lg shadow-lg min-w-[200px] max-w-[400px] border-2"
+      className="px-4 py-3 rounded-lg shadow-lg min-w-[200px] border-2"
       style={{
         backgroundColor: data.backgroundColor || '#ffffff',
         borderColor: selected ? '#3b82f6' : 'transparent',
       }}
     >
+      <NodeResizer
+        minWidth={200}
+        minHeight={100}
+        isVisible={selected}
+        lineClassName="border-blue-400"
+        handleClassName="h-3 w-3 bg-white border-2 border-blue-400"
+      />
       <Handle type="target" position={Position.Right} className="w-2 h-2" />
 
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <Type size={16} style={{ color: data.textColor || '#000000' }} />
-          <span className="font-semibold text-sm" style={{ color: data.textColor || '#000000' }}>
+          <Type size={16} className="text-black" />
+          <span className="font-semibold text-sm text-black">
             Text
           </span>
         </div>

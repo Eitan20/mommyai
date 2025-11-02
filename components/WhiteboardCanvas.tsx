@@ -23,6 +23,7 @@ import DocumentNode from './nodes/DocumentNode';
 import GroupNode from './nodes/GroupNode';
 import CollaborationCursors from './CollaborationCursors';
 import MediaDropZone from './MediaDropZone';
+import SelectionToolbar from './SelectionToolbar';
 import { isValidUrl, fetchLinkMetadata } from '@/utils/linkMetadata';
 import { detectVideoType } from '@/utils/mediaProcessing';
 
@@ -49,6 +50,7 @@ export default function WhiteboardCanvas({
 
   const { getCurrentBoard, updateBoard } = useBoardStore();
   const [isDraggingFile, setIsDraggingFile] = useState(false);
+  const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
 
   // Define custom node types
   const nodeTypes = useMemo(
@@ -189,6 +191,11 @@ export default function WhiteboardCanvas({
     return () => window.removeEventListener('paste', handlePaste);
   }, [addNode]);
 
+  // Handle selection change
+  const handleSelectionChange = useCallback(({ nodes: selectedNodes }: any) => {
+    setSelectedNodes(selectedNodes.map((node: any) => node.id));
+  }, []);
+
   return (
     <div
       className="relative w-full h-full"
@@ -210,12 +217,16 @@ export default function WhiteboardCanvas({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onSelectionChange={handleSelectionChange}
         nodeTypes={nodeTypes}
         fitView
         className="bg-white dark:bg-gray-900"
         minZoom={0.1}
         maxZoom={4}
         defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+        selectionOnDrag={true}
+        panOnScroll={true}
+        selectionMode="partial"
       >
         <Background
           variant={BackgroundVariant.Dots}
@@ -227,25 +238,6 @@ export default function WhiteboardCanvas({
           showZoom={true}
           showFitView={true}
           showInteractive={true}
-        />
-        <MiniMap
-          nodeColor={(node) => {
-            switch (node.type) {
-              case 'text':
-                return '#3b82f6';
-              case 'image':
-                return '#10b981';
-              case 'link':
-                return '#f59e0b';
-              case 'media':
-                return '#8b5cf6';
-              case 'group':
-                return '#93c5fd';
-              default:
-                return '#6b7280';
-            }
-          }}
-          className="bg-white dark:bg-gray-800"
         />
       </ReactFlow>
 
@@ -275,6 +267,12 @@ export default function WhiteboardCanvas({
 
       {/* Collaboration Cursors */}
       <CollaborationCursors boardId={boardId} />
+
+      {/* Selection Toolbar */}
+      <SelectionToolbar
+        selectedNodeIds={selectedNodes}
+        onClose={() => setSelectedNodes([])}
+      />
     </div>
   );
 }

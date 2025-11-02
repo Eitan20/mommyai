@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useCallback } from 'react';
-import { Handle, Position, NodeProps } from 'reactflow';
+import { Handle, Position, NodeProps, NodeResizer } from 'reactflow';
 import { Folder, Trash2, Plus, Type, Link as LinkIcon } from 'lucide-react';
 import useWhiteboardStore, { NodeData } from '@/store/whiteboardStore';
 
@@ -52,6 +52,13 @@ function GroupNode({ id, data, selected }: NodeProps<NodeData>) {
         height: data.height || 300,
       }}
     >
+      <NodeResizer
+        minWidth={300}
+        minHeight={200}
+        isVisible={selected}
+        lineClassName="border-blue-400"
+        handleClassName="h-3 w-3 bg-white border-2 border-blue-400"
+      />
       <Handle type="target" position={Position.Right} className="w-2 h-2" />
 
       <div className="flex items-center justify-between mb-4">
