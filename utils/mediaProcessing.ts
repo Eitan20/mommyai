@@ -87,7 +87,7 @@ export const getFacebookVideoId = (url: string): string | null => {
   return null;
 };
 
-// Fetch transcript from video URL
+// Fetch transcript from video URL using VidNavigator API
 export const fetchVideoTranscript = async (videoUrl: string): Promise<{
   transcript: string;
   title?: string;
@@ -96,8 +96,40 @@ export const fetchVideoTranscript = async (videoUrl: string): Promise<{
 }> => {
   const platform = detectVideoType(videoUrl);
 
-  // In production, call actual APIs for each platform
-  // For now, simulating with platform-specific responses
+  // Try to fetch from VidNavigator API via our Next.js API route
+  try {
+    const response = await fetch('/api/transcript', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        url: videoUrl,
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+
+      // Return the transcript data from VidNavigator API
+      if (data.transcript) {
+        return {
+          transcript: data.transcript,
+          title: data.title,
+          author: data.author,
+          duration: data.duration,
+        };
+      }
+    } else {
+      const errorData = await response.json();
+      console.warn('VidNavigator API request failed:', response.status, errorData);
+    }
+  } catch (error) {
+    console.error('Error calling VidNavigator API:', error);
+  }
+
+  // Fallback to simulated responses if API is not available or fails
+  console.log(`Falling back to simulated transcript for ${platform} video`);
   await new Promise(resolve => setTimeout(resolve, 2000));
 
   switch (platform) {
