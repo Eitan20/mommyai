@@ -44,10 +44,11 @@ function TextNode({ id, data, selected }: NodeProps<NodeData>) {
       />
       <Handle type="target" position={Position.Right} className="w-2 h-2" />
 
-      <div className="flex items-center justify-between mb-2">
+      {/* Header bar with unique color */}
+      <div className="flex items-center justify-between mb-2 -mx-4 -mt-3 px-4 py-2 rounded-t-lg" style={{ backgroundColor: '#10b981' }}>
         <div className="flex items-center gap-2">
-          <Type size={16} className="text-black" />
-          <span className="font-semibold text-sm text-black">
+          <Type size={16} className="text-white" />
+          <span className="font-semibold text-sm text-white">
             Text
           </span>
         </div>
@@ -59,10 +60,10 @@ function TextNode({ id, data, selected }: NodeProps<NodeData>) {
                 setShowColorPicker(!showColorPicker);
                 setShowBgPicker(false);
               }}
-              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+              className="p-1 hover:bg-green-600 rounded transition-colors"
               title="Text color"
             >
-              <TextCursor size={14} style={{ color: data.textColor || '#000000' }} />
+              <TextCursor size={14} className="text-white" />
             </button>
             {showColorPicker && (
               <div className="absolute top-full mt-1 right-0 p-2 bg-white dark:bg-gray-700 rounded-lg shadow-xl border border-gray-200 dark:border-gray-600 z-50 grid grid-cols-4 gap-1">
@@ -88,10 +89,10 @@ function TextNode({ id, data, selected }: NodeProps<NodeData>) {
                 setShowBgPicker(!showBgPicker);
                 setShowColorPicker(false);
               }}
-              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+              className="p-1 hover:bg-green-600 rounded transition-colors"
               title="Background color"
             >
-              <Palette size={14} />
+              <Palette size={14} className="text-white" />
             </button>
             {showBgPicker && (
               <div className="absolute top-full mt-1 right-0 p-2 bg-white dark:bg-gray-700 rounded-lg shadow-xl border border-gray-200 dark:border-gray-600 z-50 grid grid-cols-4 gap-1">
@@ -112,9 +113,9 @@ function TextNode({ id, data, selected }: NodeProps<NodeData>) {
           </div>
           <button
             onClick={handleDelete}
-            className="p-1 hover:bg-red-100 dark:hover:bg-red-900 rounded transition-colors"
+            className="p-1 hover:bg-green-600 rounded transition-colors"
           >
-            <Trash2 size={14} className="text-red-500" />
+            <Trash2 size={14} className="text-white" />
           </button>
         </div>
       </div>

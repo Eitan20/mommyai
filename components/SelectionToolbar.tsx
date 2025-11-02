@@ -10,7 +10,7 @@ interface SelectionToolbarProps {
 }
 
 export default function SelectionToolbar({ selectedNodeIds, onClose }: SelectionToolbarProps) {
-  const { nodes, deleteNode, addNode, updateNodeData } = useWhiteboardStore();
+  const { nodes, deleteNode, setNodes } = useWhiteboardStore();
 
   const selectedNodes = nodes.filter(node => selectedNodeIds.includes(node.id));
 
@@ -23,48 +23,93 @@ export default function SelectionToolbar({ selectedNodeIds, onClose }: Selection
     const maxX = Math.max(...selectedNodes.map((n) => n.position.x + (n.width || 200)));
     const maxY = Math.max(...selectedNodes.map((n) => n.position.y + (n.height || 100)));
 
-    // Create group node
     const groupId = `group-${Date.now()}`;
-    addNode('group',
-      { x: minX - 20, y: minY - 20 },
-      {
-        label: 'Group',
-        width: maxX - minX + 40,
-        height: maxY - minY + 40,
-        childNodes: selectedNodeIds,
-      }
-    );
+    const groupWidth = maxX - minX + 40;
+    const groupHeight = maxY - minY + 40;
 
-    // Update selected nodes to be children of the group
-    selectedNodeIds.forEach((nodeId) => {
-      const node = nodes.find(n => n.id === nodeId);
-      if (node) {
-        // Make nodes children of the group
-        updateNodeData(nodeId, {});
-        // Note: We'll need to update the store to handle parent-child relationships
+    // Create group node
+    const groupNode = {
+      id: groupId,
+      type: 'group',
+      position: { x: minX - 20, y: minY - 20 },
+      data: {
+        label: 'Group',
+        width: groupWidth,
+        height: groupHeight,
+        childNodes: selectedNodeIds,
+      },
+      style: {
+        width: groupWidth,
+        height: groupHeight,
+        zIndex: 0,
+      },
+    };
+
+    // Update selected nodes to be children with relative positions
+    const updatedNodes = nodes.map(node => {
+      if (selectedNodeIds.includes(node.id)) {
+        return {
+          ...node,
+          position: {
+            x: node.position.x - (minX - 20),
+            y: node.position.y - (minY - 20),
+          },
+          parentNode: groupId,
+          extent: 'parent' as const,
+          style: {
+            ...node.style,
+            zIndex: 10, // Children appear on top
+          },
+        };
       }
+      return node;
     });
 
+    // Add group node
+    setNodes([...updatedNodes, groupNode]);
     onClose();
-  }, [selectedNodes, selectedNodeIds, nodes, addNode, updateNodeData, onClose]);
+  }, [selectedNodes, selectedNodeIds, nodes, setNodes, onClose]);
 
   const handleDetach = useCallback(() => {
     // Find nodes that have a parent
     const nodesToDetach = selectedNodes.filter(node => node.parentNode);
 
-    nodesToDetach.forEach((node) => {
-      if (node.parentNode) {
-        // Remove from parent's childNodes array
+    const updatedNodes = nodes.map(node => {
+      // If this is a node to detach
+      if (nodesToDetach.some(n => n.id === node.id)) {
         const parent = nodes.find(n => n.id === node.parentNode);
-        if (parent?.data.childNodes) {
-          const newChildNodes = parent.data.childNodes.filter(id => id !== node.id);
-          updateNodeData(node.parentNode, { childNodes: newChildNodes });
+        if (parent) {
+          // Convert relative position back to absolute
+          return {
+            ...node,
+            position: {
+              x: node.position.x + parent.position.x,
+              y: node.position.y + parent.position.y,
+            },
+            parentNode: undefined,
+            extent: undefined,
+          };
         }
       }
+      // If this is a parent, update its childNodes
+      if (node.data.childNodes) {
+        const newChildNodes = node.data.childNodes.filter(
+          id => !nodesToDetach.some(n => n.id === id)
+        );
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            childNodes: newChildNodes,
+          },
+        };
+      }
+      return node;
     });
 
+    setNodes(updatedNodes);
     onClose();
-  }, [selectedNodes, nodes, updateNodeData, onClose]);
+  }, [selectedNodes, nodes, setNodes, onClose]);
 
   const handleDeleteSelected = useCallback(() => {
     selectedNodeIds.forEach(nodeId => {
