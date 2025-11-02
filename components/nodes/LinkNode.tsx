@@ -51,16 +51,17 @@ function LinkNode({ id, data, selected }: NodeProps<NodeData>) {
       />
       <Handle type="target" position={Position.Right} className="w-2 h-2" />
 
-      <div className="flex items-center justify-between mb-2">
+      {/* Orange header bar for Link/Social Media Node */}
+      <div className="flex items-center justify-between mb-2 -mx-4 -mt-3 px-4 py-2 rounded-t-lg" style={{ backgroundColor: '#f59e0b' }}>
         <div className="flex items-center gap-2">
           {data.icon ? (
             <img src={data.icon} alt="" className="w-4 h-4" onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }} />
           ) : (
-            <LinkIcon size={16} style={{ color: data.textColor || '#000000' }} />
+            <LinkIcon size={16} className="text-white" />
           )}
-          <span className="font-semibold text-sm" style={{ color: data.textColor || '#000000' }}>
+          <span className="font-semibold text-sm text-white">
             Link
           </span>
         </div>
@@ -68,17 +69,17 @@ function LinkNode({ id, data, selected }: NodeProps<NodeData>) {
           {data.url && (
             <button
               onClick={handleOpenLink}
-              className="hover:bg-blue-100 dark:hover:bg-blue-900 p-1 rounded transition-colors"
+              className="p-1 hover:bg-orange-600 rounded transition-colors"
               title="Open link"
             >
-              <ExternalLink size={14} className="text-blue-500" />
+              <ExternalLink size={14} className="text-white" />
             </button>
           )}
           <button
             onClick={handleDelete}
-            className="hover:bg-red-100 dark:hover:bg-red-900 p-1 rounded transition-colors"
+            className="p-1 hover:bg-orange-600 rounded transition-colors"
           >
-            <Trash2 size={14} className="text-red-500" />
+            <Trash2 size={14} className="text-white" />
           </button>
         </div>
       </div>

@@ -39,7 +39,7 @@ export default function LeftSidebar({ onChatToggle, isChatOpen }: LeftSidebarPro
       icon: Video,
       description: 'YouTube, TikTok, Instagram',
       color: 'bg-gradient-to-br from-pink-500 to-red-500',
-      action: () => handleAddNode('media', { mediaType: 'video', label: 'Social Media Content' }),
+      action: () => handleAddNode('video', { label: 'Social Media Content' }),
     },
     {
       id: 'voice-over',
@@ -47,7 +47,7 @@ export default function LeftSidebar({ onChatToggle, isChatOpen }: LeftSidebarPro
       icon: Mic,
       description: 'Record voice notes',
       color: 'bg-gradient-to-br from-green-500 to-teal-500',
-      action: () => handleAddNode('media', { mediaType: 'audio', label: 'Voice Over' }),
+      action: () => handleAddNode('audio', { label: 'Voice Over' }),
     },
     {
       id: 'images',

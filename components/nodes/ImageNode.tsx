@@ -89,21 +89,22 @@ function ImageNode({ id, data, selected }: NodeProps<NodeData>) {
       />
       <Handle type="target" position={Position.Right} className="w-2 h-2" />
 
-      <div className="flex items-center justify-between mb-2">
+      {/* Teal header bar for Image Node */}
+      <div className="flex items-center justify-between mb-2 -mx-4 -mt-3 px-4 py-2 rounded-t-lg" style={{ backgroundColor: '#14b8a6' }}>
         <div className="flex items-center gap-2">
-          <ImageIcon size={16} style={{ color: data.textColor || '#000000' }} />
-          <span className="font-semibold text-sm" style={{ color: data.textColor || '#000000' }}>
+          <ImageIcon size={16} className="text-white" />
+          <span className="font-semibold text-sm text-white">
             Image
           </span>
           {content?.status === 'completed' && (
-            <Sparkles size={14} className="text-green-500" title="Analyzed" />
+            <Sparkles size={14} className="text-white" title="Analyzed" />
           )}
         </div>
         <button
           onClick={handleDelete}
-          className="hover:bg-red-100 dark:hover:bg-red-900 p-1 rounded transition-colors"
+          className="p-1 hover:bg-teal-600 rounded transition-colors"
         >
-          <Trash2 size={14} className="text-red-500" />
+          <Trash2 size={14} className="text-white" />
         </button>
       </div>
 

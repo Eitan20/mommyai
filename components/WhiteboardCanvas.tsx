@@ -18,7 +18,8 @@ import useBoardStore from '@/store/boardStore';
 import TextNode from './nodes/TextNode';
 import ImageNode from './nodes/ImageNode';
 import LinkNode from './nodes/LinkNode';
-import MediaNode from './nodes/MediaNode';
+import VideoNode from './nodes/VideoNode';
+import AudioNode from './nodes/AudioNode';
 import DocumentNode from './nodes/DocumentNode';
 import GroupNode from './nodes/GroupNode';
 import CollaborationCursors from './CollaborationCursors';
@@ -58,7 +59,8 @@ export default function WhiteboardCanvas({
       text: TextNode,
       image: ImageNode,
       link: LinkNode,
-      media: MediaNode,
+      video: VideoNode,
+      audio: AudioNode,
       document: DocumentNode,
       group: GroupNode,
     }),
@@ -110,11 +112,16 @@ export default function WhiteboardCanvas({
             });
             break;
           case 'video':
-          case 'audio':
-            addNode('media', { x: centerX, y: centerY }, {
+            addNode('video', { x: centerX, y: centerY }, {
               mediaUrl: dataUrl,
               fileName: file.name,
-              mediaType: category,
+              label: file.name,
+            });
+            break;
+          case 'audio':
+            addNode('audio', { x: centerX, y: centerY }, {
+              mediaUrl: dataUrl,
+              fileName: file.name,
               label: file.name,
             });
             break;
@@ -167,10 +174,9 @@ export default function WhiteboardCanvas({
       const videoType = detectVideoType(pastedText);
 
       if (videoType && videoType !== 'unknown') {
-        // Create media node for videos
-        addNode('media', { x: centerX, y: centerY }, {
+        // Create video node for videos
+        addNode('video', { x: centerX, y: centerY }, {
           mediaUrl: pastedText,
-          mediaType: 'video',
           label: `${videoType.charAt(0).toUpperCase() + videoType.slice(1)} Video`,
         });
       } else {

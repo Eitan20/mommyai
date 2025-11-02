@@ -61,23 +61,24 @@ function GroupNode({ id, data, selected }: NodeProps<NodeData>) {
       />
       <Handle type="target" position={Position.Right} className="w-2 h-2" />
 
-      <div className="flex items-center justify-between mb-4">
+      {/* Light blue header bar for Group Node */}
+      <div className="flex items-center justify-between mb-2 -mx-4 -mt-4 px-4 py-2 rounded-t-lg" style={{ backgroundColor: '#60a5fa' }}>
         <div className="flex items-center gap-2">
-          <Folder size={16} className="text-blue-500" />
+          <Folder size={16} className="text-white" />
           <input
             type="text"
             value={data.label || 'Group'}
             onChange={handleLabelChange}
-            className="font-semibold text-sm bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-1"
-            style={{ color: data.textColor || '#1e40af' }}
+            className="font-semibold text-sm bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-white rounded px-1 text-white placeholder-white/70"
+            style={{ color: '#ffffff' }}
           />
-          <span className="text-xs text-gray-400">({childCount} items)</span>
+          <span className="text-xs text-white/80">({childCount} items)</span>
         </div>
         <button
           onClick={handleDelete}
-          className="hover:bg-red-100 dark:hover:bg-red-900 p-1 rounded transition-colors"
+          className="p-1 hover:bg-blue-600 rounded transition-colors"
         >
-          <Trash2 size={14} className="text-red-500" />
+          <Trash2 size={14} className="text-white" />
         </button>
       </div>
 
