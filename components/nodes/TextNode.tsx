@@ -33,6 +33,8 @@ function TextNode({ id, data, selected }: NodeProps<NodeData>) {
       style={{
         backgroundColor: data.backgroundColor || '#ffffff',
         borderColor: selected ? '#3b82f6' : 'transparent',
+        width: data.width || 200,
+        height: data.height || 150,
       }}
     >
       <NodeResizer

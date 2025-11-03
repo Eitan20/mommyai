@@ -69,6 +69,8 @@ function DocumentNode({ id, data, selected }: NodeProps<NodeData>) {
       style={{
         backgroundColor: data.backgroundColor || '#ffffff',
         borderColor: selected ? '#3b82f6' : 'transparent',
+        width: data.width || 280,
+        height: data.height || 220,
       }}
     >
       <NodeResizer

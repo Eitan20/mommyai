@@ -161,6 +161,16 @@ export default function WhiteboardCanvas({
   // Handle paste events (Cmd+V / Ctrl+V)
   useEffect(() => {
     const handlePaste = async (e: ClipboardEvent) => {
+      // Don't create nodes if user is pasting into an input/textarea
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable
+      ) {
+        return; // User is typing in a field, don't interfere
+      }
+
       const pastedText = e.clipboardData?.getData('text');
 
       if (!pastedText || !isValidUrl(pastedText)) {
