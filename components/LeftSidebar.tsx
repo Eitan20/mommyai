@@ -29,9 +29,12 @@ export default function LeftSidebar({ onChatToggle, isChatOpen }: LeftSidebarPro
       id: 'chat',
       name: 'Chat',
       icon: MessageSquare,
-      description: 'AI interaction tool',
+      description: 'AI Chat Node',
       color: 'bg-gradient-to-br from-purple-500 to-blue-500',
-      action: onChatToggle,
+      action: () => handleAddNode('chat', {
+        label: 'AI Chat',
+        height: 500,
+      }),
     },
     {
       id: 'social-media',
@@ -116,7 +119,6 @@ export default function LeftSidebar({ onChatToggle, isChatOpen }: LeftSidebarPro
           className={`
             group relative w-14 h-14 rounded-xl shadow-md hover:shadow-lg
             transition-all duration-200 hover:scale-110
-            ${tool.id === 'chat' && isChatOpen ? 'ring-2 ring-purple-500 ring-offset-2' : ''}
             ${tool.color}
           `}
           title={tool.name}

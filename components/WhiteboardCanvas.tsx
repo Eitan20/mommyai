@@ -22,6 +22,7 @@ import VideoNode from './nodes/VideoNode';
 import AudioNode from './nodes/AudioNode';
 import DocumentNode from './nodes/DocumentNode';
 import GroupNode from './nodes/GroupNode';
+import ChatNode from './nodes/ChatNode';
 import CollaborationCursors from './CollaborationCursors';
 import MediaDropZone from './MediaDropZone';
 import SelectionToolbar from './SelectionToolbar';
@@ -63,6 +64,7 @@ export default function WhiteboardCanvas({
       audio: AudioNode,
       document: DocumentNode,
       group: GroupNode,
+      chat: ChatNode,
     }),
     []
   );
