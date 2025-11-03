@@ -10,9 +10,7 @@ import {
   Search,
   Upload,
   Image as ImageIcon,
-  Sparkles,
   Send,
-  ChevronDown,
   MoreVertical,
   X,
   Square,
@@ -21,6 +19,12 @@ import {
 import useWhiteboardStore, { NodeData } from '@/store/whiteboardStore';
 import useChatStore from '@/store/chatStore';
 import useContentStore from '@/store/contentStore';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 
 function ChatNode({ id, data, selected }: NodeProps<NodeData>) {
   const { updateNodeData, deleteNode } = useWhiteboardStore();
@@ -306,10 +310,11 @@ function ChatNode({ id, data, selected }: NodeProps<NodeData>) {
 
   return (
     <div
-      className="rounded-lg shadow-lg min-w-[400px] border-2 flex flex-col"
+      className={cn(
+        "rounded-lg shadow-lg min-w-[400px] border-2 flex flex-col bg-card",
+        selected && "border-purple-400"
+      )}
       style={{
-        backgroundColor: '#ffffff',
-        borderColor: selected ? '#8b5cf6' : 'transparent',
         height: data.height || 500,
       }}
     >
@@ -320,7 +325,7 @@ function ChatNode({ id, data, selected }: NodeProps<NodeData>) {
         lineClassName="border-purple-400"
         handleClassName="h-3 w-3 bg-white border-2 border-purple-400"
       />
-      <Handle type="target" position={Position.Right} className="w-2 h-2" />
+      <Handle type="target" position={Position.Left} className="w-2 h-2" />
 
       {/* Purple gradient header for Chat Node */}
       <div className="flex items-center justify-between px-4 py-2 rounded-t-lg bg-gradient-to-r from-purple-500 to-pink-500">
@@ -329,106 +334,125 @@ function ChatNode({ id, data, selected }: NodeProps<NodeData>) {
           <span className="font-semibold text-sm text-white">AI Chat</span>
         </div>
         <div className="flex gap-1">
-          <button
+          <Button
             onClick={handleNewConversation}
-            className="p-1 hover:bg-purple-600 rounded transition-colors"
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 hover:bg-purple-600"
             title="New Conversation"
           >
             <Plus size={14} className="text-white" />
-          </button>
-          <button
-            onClick={() => setShowConversations(!showConversations)}
-            className="p-1 hover:bg-purple-600 rounded transition-colors"
-            title="Conversations"
-          >
-            <MoreVertical size={14} className="text-white" />
-          </button>
-          <button
+          </Button>
+          <DropdownMenu open={showConversations} onOpenChange={setShowConversations}>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 hover:bg-purple-600"
+                title="Conversations"
+              >
+                <MoreVertical size={14} className="text-white" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-64 max-h-80">
+              <DropdownMenuLabel>Conversations</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {Object.values(conversations).length === 0 ? (
+                <div className="p-4 text-center text-xs text-muted-foreground">
+                  No conversations yet
+                </div>
+              ) : (
+                Object.values(conversations).map((conv) => (
+                  <DropdownMenuItem
+                    key={conv.id}
+                    className={cn(
+                      "flex items-center justify-between cursor-pointer",
+                      currentConversationId === conv.id && "bg-accent"
+                    )}
+                    onClick={() => handleSelectConversation(conv.id)}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium truncate">{conv.title}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {conv.messages.length} messages
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 hover:bg-destructive/10"
+                      onClick={(e) => handleDeleteConversation(conv.id, e)}
+                    >
+                      <X size={12} className="text-destructive" />
+                    </Button>
+                  </DropdownMenuItem>
+                ))
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button
             onClick={handleDelete}
-            className="p-1 hover:bg-purple-600 rounded transition-colors"
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 hover:bg-purple-600"
           >
             <Trash2 size={14} className="text-white" />
-          </button>
+          </Button>
         </div>
       </div>
-
-      {/* Conversations dropdown */}
-      {showConversations && (
-        <div className="absolute top-12 right-4 bg-white dark:bg-gray-800 border rounded-lg shadow-xl z-50 w-64 max-h-80 overflow-y-auto">
-          <div className="p-2 border-b">
-            <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">Conversations</p>
-          </div>
-          {Object.values(conversations).length === 0 ? (
-            <div className="p-4 text-center text-xs text-gray-500">No conversations yet</div>
-          ) : (
-            Object.values(conversations).map((conv) => (
-              <div
-                key={conv.id}
-                className={`flex items-center justify-between p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer ${
-                  currentConversationId === conv.id ? 'bg-purple-50 dark:bg-purple-900/20' : ''
-                }`}
-                onClick={() => handleSelectConversation(conv.id)}
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-black dark:text-white truncate">{conv.title}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {conv.messages.length} messages
-                  </p>
-                </div>
-                <button
-                  onClick={(e) => handleDeleteConversation(conv.id, e)}
-                  className="p-1 hover:bg-red-100 dark:hover:bg-red-900 rounded"
-                >
-                  <X size={12} className="text-red-500" />
-                </button>
-              </div>
-            ))
-          )}
-        </div>
-      )}
 
       {/* Model selector */}
       <div className="px-4 py-2 border-b flex items-center gap-2">
-        <span className="text-xs text-gray-600 dark:text-gray-400">Model:</span>
-        <select
+        <span className="text-xs text-muted-foreground">Model:</span>
+        <Select
           value={selectedModel}
-          onChange={(e) => {
-            setSelectedModel(e.target.value);
-            updateNodeData(id, { model: e.target.value });
+          onValueChange={(value) => {
+            setSelectedModel(value);
+            updateNodeData(id, { model: value });
           }}
-          className="flex-1 text-xs border rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-purple-500"
         >
-          {models.map((model) => (
-            <option key={model.id} value={model.id}>{model.name}</option>
-          ))}
-        </select>
+          <SelectTrigger className="flex-1 h-8 text-xs">
+            <SelectValue placeholder="Select model" />
+          </SelectTrigger>
+          <SelectContent>
+            {models.map((model) => (
+              <SelectItem key={model.id} value={model.id}>
+                {model.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <ScrollArea className="flex-1 p-4">
         {!conversation || conversation.messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
-            <MessageSquare size={48} className="text-gray-300 dark:text-gray-600 mb-4" />
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+            <MessageSquare size={48} className="text-muted-foreground mb-4" />
+            <p className="text-sm text-muted-foreground mb-2">
               Start a conversation
             </p>
-            <p className="text-xs text-gray-400 dark:text-gray-500">
+            <p className="text-xs text-muted-foreground">
               Connect nodes to add context to your chat
             </p>
           </div>
         ) : (
-          <>
+          <div className="space-y-3">
             {conversation.messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={cn(
+                  "flex",
+                  message.role === 'user' ? 'justify-end' : 'justify-start'
+                )}
               >
                 <div
-                  className={`max-w-[80%] rounded-lg px-3 py-2 ${
+                  className={cn(
+                    "max-w-[80%] rounded-lg px-3 py-2",
                     message.role === 'user'
                       ? 'bg-purple-500 text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 text-black dark:text-white'
-                  }`}
+                      : 'bg-muted text-foreground'
+                  )}
                 >
                   <p className="text-xs whitespace-pre-wrap">{message.content}</p>
                   {message.imageUrl && (
@@ -438,21 +462,23 @@ function ChatNode({ id, data, selected }: NodeProps<NodeData>) {
               </div>
             ))}
             <div ref={messagesEndRef} />
-          </>
+          </div>
         )}
-      </div>
+      </ScrollArea>
 
       {/* Suggested prompts */}
       {(!conversation || conversation.messages.length === 0) && (
         <div className="px-4 pb-2 flex gap-2 flex-wrap">
           {suggestedPrompts.map((prompt, idx) => (
-            <button
+            <Button
               key={idx}
+              variant="secondary"
+              size="sm"
               onClick={() => handleSuggestedPrompt(prompt.text)}
-              className="text-xs px-3 py-1 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-full hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors"
+              className="text-xs h-7"
             >
               {prompt.icon} {prompt.text}
-            </button>
+            </Button>
           ))}
         </div>
       )}
@@ -461,38 +487,45 @@ function ChatNode({ id, data, selected }: NodeProps<NodeData>) {
       <div className="border-t p-3 space-y-2">
         {/* Action buttons */}
         <div className="flex gap-2">
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={toggleRecording}
-            className={`p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
-              isRecording ? 'bg-red-100 dark:bg-red-900/20 animate-pulse' : ''
-            }`}
+            className={cn(
+              "h-8 w-8",
+              isRecording && "bg-red-100 dark:bg-red-900/20 animate-pulse"
+            )}
             title={isRecording ? 'Stop recording' : 'Voice input'}
           >
             {isRecording ? (
               <Square size={16} className="text-red-500" />
             ) : (
-              <Mic size={16} className="text-gray-600 dark:text-gray-400" />
+              <Mic size={16} />
             )}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={handleSearchInternet}
             disabled={!inputMessage.trim() || isSearching}
-            className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+            className="h-8 w-8"
             title="Search internet"
           >
             {isSearching ? (
-              <Loader size={16} className="animate-spin text-blue-500" />
+              <Loader size={16} className="animate-spin" />
             ) : (
-              <Search size={16} className="text-gray-600 dark:text-gray-400" />
+              <Search size={16} />
             )}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => fileInputRef.current?.click()}
-            className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="h-8 w-8"
             title="Upload image"
           >
-            <Upload size={16} className="text-gray-600 dark:text-gray-400" />
-          </button>
+            <Upload size={16} />
+          </Button>
           <input
             ref={fileInputRef}
             type="file"
@@ -500,37 +533,39 @@ function ChatNode({ id, data, selected }: NodeProps<NodeData>) {
             onChange={handleImageUpload}
             className="hidden"
           />
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={handleGenerateImage}
             disabled={!inputMessage.trim() || isGeneratingImage}
-            className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+            className="h-8 w-8"
             title="Generate image"
           >
             {isGeneratingImage ? (
-              <Loader size={16} className="animate-spin text-purple-500" />
+              <Loader size={16} className="animate-spin" />
             ) : (
-              <ImageIcon size={16} className="text-gray-600 dark:text-gray-400" />
+              <ImageIcon size={16} />
             )}
-          </button>
+          </Button>
         </div>
 
         {/* Input field */}
         <div className="flex gap-2">
-          <input
-            type="text"
+          <Input
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
             placeholder="Type a message..."
-            className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm text-black dark:text-white bg-white dark:bg-gray-800"
+            className="flex-1 h-9"
           />
-          <button
+          <Button
             onClick={handleSendMessage}
             disabled={!inputMessage.trim()}
-            className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            size="icon"
+            className="h-9 w-9"
           >
             <Send size={16} />
-          </button>
+          </Button>
         </div>
       </div>
 
