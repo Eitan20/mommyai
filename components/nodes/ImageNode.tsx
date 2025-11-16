@@ -57,7 +57,7 @@ function ImageNode({ id, data, selected }: NodeProps<NodeData>) {
         keyPoints: analysis.objects.map(obj => `Detected: ${obj}`),
       });
 
-      updateNodeData(id, { processed: true, caption: analysis.caption });
+      updateNodeData(id, { caption: analysis.caption });
     } catch (error) {
       updateContent(id, { status: 'error' });
     } finally {
@@ -99,7 +99,7 @@ function ImageNode({ id, data, selected }: NodeProps<NodeData>) {
             Image
           </span>
           {content?.status === 'completed' && (
-            <Sparkles size={14} className="text-white" title="Analyzed" />
+            <Sparkles size={14} className="text-white" />
           )}
         </div>
         <button

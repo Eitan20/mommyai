@@ -47,7 +47,7 @@ function DocumentNode({ id, data, selected }: NodeProps<NodeData>) {
           ],
         });
 
-        updateNodeData(id, { processed: true, pageCount: result.pageCount });
+        updateNodeData(id, { pageCount: result.pageCount });
       } catch (error) {
         updateContent(id, { status: 'error' });
       } finally {
@@ -90,7 +90,7 @@ function DocumentNode({ id, data, selected }: NodeProps<NodeData>) {
             Document
           </span>
           {content?.status === 'completed' && (
-            <Sparkles size={14} className="text-white" title="Processed" />
+            <Sparkles size={14} className="text-white" />
           )}
         </div>
         <button
