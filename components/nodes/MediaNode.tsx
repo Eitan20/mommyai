@@ -117,8 +117,6 @@ function MediaNode({ id, data, selected }: NodeProps<NodeData>) {
           'Ready for AI analysis',
         ],
       });
-
-      updateNodeData(id, { processed: true });
     } catch (error) {
       updateContent(id, { status: 'error' });
     } finally {
@@ -145,8 +143,6 @@ function MediaNode({ id, data, selected }: NodeProps<NodeData>) {
         transcript,
         summary: `Audio transcribed from ${name}`,
       });
-
-      updateNodeData(id, { processed: true });
     } catch (error) {
       updateContent(id, { status: 'error' });
     } finally {
@@ -213,7 +209,7 @@ function MediaNode({ id, data, selected }: NodeProps<NodeData>) {
             {videoType ? `${videoType.charAt(0).toUpperCase() + videoType.slice(1)}` : 'Media'}
           </span>
           {content?.status === 'completed' && (
-            <Sparkles size={14} className="text-green-500" title="Processed" />
+            <Sparkles size={14} className="text-green-500" />
           )}
         </div>
         <button

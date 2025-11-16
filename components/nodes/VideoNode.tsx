@@ -96,8 +96,6 @@ function VideoNode({ id, data, selected }: NodeProps<NodeData>) {
           'Ready for AI analysis',
         ],
       });
-
-      updateNodeData(id, { processed: true });
     } catch (error) {
       updateContent(id, { status: 'error' });
     } finally {
@@ -140,7 +138,7 @@ function VideoNode({ id, data, selected }: NodeProps<NodeData>) {
             {videoType ? `${videoType.charAt(0).toUpperCase() + videoType.slice(1)}` : 'Video'}
           </span>
           {content?.status === 'completed' && (
-            <Sparkles size={14} className="text-white" title="Processed" />
+            <Sparkles size={14} className="text-white" />
           )}
         </div>
         <button

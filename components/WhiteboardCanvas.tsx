@@ -9,6 +9,7 @@ import ReactFlow, {
   Connection,
   addEdge,
   useReactFlow,
+  SelectionMode,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { X } from 'lucide-react';
@@ -244,7 +245,7 @@ export default function WhiteboardCanvas({
         defaultViewport={{ x: 0, y: 0, zoom: 1 }}
         selectionOnDrag={true}
         panOnScroll={true}
-        selectionMode="partial"
+        selectionMode={SelectionMode.Partial}
       >
         <Background
           variant={BackgroundVariant.Dots}

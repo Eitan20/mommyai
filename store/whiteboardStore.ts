@@ -16,7 +16,12 @@ export type NodeData = {
   height?: number;
   childNodes?: string[]; // Track child node IDs for groups
   fileName?: string;
+  fileSize?: number;
+  pageCount?: number;
+  caption?: string;
   recordingDuration?: number;
+  conversationId?: string;
+  model?: string;
 };
 
 interface WhiteboardState {

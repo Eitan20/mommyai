@@ -72,8 +72,6 @@ function AudioNode({ id, data, selected }: NodeProps<NodeData>) {
         transcript,
         summary: `Audio transcribed from ${name}`,
       });
-
-      updateNodeData(id, { processed: true });
     } catch (error) {
       updateContent(id, { status: 'error' });
     } finally {
@@ -135,7 +133,7 @@ function AudioNode({ id, data, selected }: NodeProps<NodeData>) {
           <Music size={16} className="text-white" />
           <span className="font-semibold text-sm text-white">Audio</span>
           {content?.status === 'completed' && (
-            <Sparkles size={14} className="text-white" title="Processed" />
+            <Sparkles size={14} className="text-white" />
           )}
         </div>
         <button
